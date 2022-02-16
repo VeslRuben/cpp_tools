@@ -2,6 +2,7 @@
 // Created by itzRu on 01.09.2021.
 //
 
+#include <list>
 #include "matrix.h"
 #include "cmath"
 
@@ -30,7 +31,7 @@ namespace Matrix {
      * Returns a a matrix of size height*width, initialises the matrix with the past in values parameter.
      * @param height Height of the matrix.
      * @param width Width of the matrix.
-     * @param values Values to initialise the matrix. must mi of size height*width
+     * @param values Values to initialise the matrix. must be of size height*width
      */
     Matrix2::Matrix2(int height, int width, const double *values) {
         width_ = width;
@@ -39,6 +40,19 @@ namespace Matrix {
         for (int i = 0; i < width_ * height_; i++) {
             values_[i] = values[i];
         }
+    }
+
+    /**
+     * Returns a a matrix of size height*width, initialises the matrix with the past in values parameter.
+     * @param height Height of the matrix.
+     * @param width Width of the matrix.
+     * @param values Values to initialise the matrix. must be of size height*width
+     */
+    Matrix2::Matrix2(int height, int width, const std::list<double> &values) {
+        height_ = height;
+        width_ = width;
+        values_ = new double[height * width];
+        std::copy(values.begin(), values.end(), values_);
     }
 
     Matrix2::Matrix2(const Matrix2 &old_obj) {

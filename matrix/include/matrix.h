@@ -4,6 +4,8 @@
 
 #ifndef MATRIX_H
 #define MATRIX_H
+
+
 namespace Matrix {
     class Matrix2 {
     public:
@@ -12,6 +14,8 @@ namespace Matrix {
         Matrix2(int height, int width);
 
         Matrix2(int height, int width, const double *values);
+
+        Matrix2(int height, int width, const std::list<double> &values);
 
         Matrix2(const Matrix2 &old_obj);  // copy constructor
 
