@@ -2,9 +2,8 @@
 // Created by itzRu on 01.09.2021.
 //
 
-#include <list>
 #include "matrix.h"
-#include "cmath"
+#include "iostream"
 
 namespace Matrix {
     /**
@@ -55,6 +54,10 @@ namespace Matrix {
         std::copy(values.begin(), values.end(), values_);
     }
 
+    /**
+     * Copy constructor
+     * @param old_obj
+     */
     Matrix2::Matrix2(const Matrix2 &old_obj) {
         height_ = old_obj.height_;
         width_ = old_obj.width_;
@@ -64,6 +67,20 @@ namespace Matrix {
         }
     }
 
+    /**
+     * Move constructor
+     * @param old_obj
+     */
+    Matrix2::Matrix2(Matrix2 &&old_obj)  noexcept {
+        height_ = old_obj.height_;
+        width_ = old_obj.width_;
+        values_ = old_obj.values_;
+        old_obj.values_ = nullptr;
+    }
+
+    /**
+     * Destructor
+     */
     Matrix2::~Matrix2() {
         delete[] values_;
         values_ = nullptr;
@@ -121,7 +138,7 @@ namespace Matrix {
      * @param mat Matrix2 to add
      * @return Result of the addition as a new matrix.
      */
-    Matrix2 Matrix2::operator+(Matrix2 &mat) {
+    Matrix2 Matrix2::operator+(Matrix2 const &mat) const {
         Matrix2 result(this->getHeight(), this->getWidth());
         if (height_ == mat.height_ && width_ == mat.width_) {
             for (int r = 0; r < this->getHeight(); r++) {
@@ -138,7 +155,7 @@ namespace Matrix {
     * @param mat Matrix2 to add
     * @return Update this matrix with the result of the addition an returns this pointer.
     */
-    Matrix2 Matrix2::operator+=(Matrix2 &mat) {
+    Matrix2 Matrix2::operator+=(Matrix2 const &mat) {
         Matrix2 temp = this->operator+(mat);
         *this = this->operator=(temp);
         return *this;
@@ -149,7 +166,7 @@ namespace Matrix {
      * @param mat Matrix2 to subtract form this.
      * @return Result of the subtraction as a new Matrix2.
      */
-    Matrix2 Matrix2::operator-(Matrix2 &mat) {
+    Matrix2 Matrix2::operator-(Matrix2 const&mat) const {
         Matrix2 result(this->getHeight(), this->getWidth());
         if (height_ == mat.height_ && width_ == mat.width_) {
             for (int r = 0; r < this->getHeight(); r++) {
@@ -166,7 +183,7 @@ namespace Matrix {
      * @param mat Matrix2 to subtract form this.
      * @return Update this matrix with the result of the subtraction an returns this pointer.
      */
-    Matrix2 Matrix2::operator-=(Matrix2 &mat) {
+    Matrix2 Matrix2::operator-=(Matrix2 const &mat) {
         Matrix2 temp = this->operator-(mat);
         *this = this->operator=(temp);
         return *this;
@@ -177,7 +194,7 @@ namespace Matrix {
      * @param mat Matrix2 to multiply with this.
      * @return Result of the multiplication as a new Matrix2.
      */
-    Matrix2 Matrix2::operator*(Matrix2 &mat) {
+    Matrix2 Matrix2::operator*(Matrix2 const &mat) const {
         Matrix2 result(this->getHeight(), mat.getWidth());
         if (width_ == mat.height_) {
             for (int i = 0; i < result.getHeight() * result.getWidth(); i++) {
@@ -198,7 +215,7 @@ namespace Matrix {
      * @param mat Matrix2 to multiply with this.
      * @return Update this matrix with the result of the multiplication an returns this pointer.
      */
-    Matrix2 Matrix2::operator*=(Matrix2 &mat) {
+    Matrix2 Matrix2::operator*=(Matrix2 const &mat) {
         Matrix2 temp = this->operator*(mat);
         *this = this->operator=(temp);
         return *this;
@@ -288,7 +305,7 @@ namespace Matrix {
      * @param col Col
      * @return Value at the position.
      */
-    double Matrix2::operator()(int row, int col) {
+    double Matrix2::operator()(int row, int col) const {
         return get(row, col);
     }
     // #####################################
@@ -303,13 +320,14 @@ namespace Matrix {
         height_ = height;
         width_ = width;
         delete[] values_;
-        values_ = new double[height_ * width_];;
+        values_ = new double[height_ * width_];
     }
 
     /**
-     * Transposes the matrix.
+     * Returns the transpose of the matrix as a copy.
+     * @return transpose of the matrix.
      */
-    void Matrix2::transpose() {
+    Matrix2 Matrix2::transpose() const {
         auto *newList = new double[height_ * width_];
         int newListIndex = 0;
         int newNumCols = height_;
@@ -320,13 +338,50 @@ namespace Matrix {
                 newList[newListIndex++] = get(row, col);
             }
         }
-
-        height_ = newNumRows;
-        width_ = newNumCols;
-        for (int i = 0; i < height_ * width_; i++) {
-            values_[i] = newList[i];
-        }
+        Matrix2 result(newNumRows, newNumCols, newList);
         delete[] newList;
+        return result;
+    }
+
+
+    /**
+     * Returns the inverse of the matrix as a copy.
+     * @return inverse of the matrix.
+     */
+    Matrix2 Matrix2::inverse() const {
+        Matrix2 clone = *this;
+        Matrix2 result = *this;
+        if (height_ == width_) {
+            int n = height_;
+            int i, j, k;
+            double t;
+            for (i = 0; i < n; i++) {
+                for (j = 0; j < n; j++) {
+                    if (i == j) {
+                        result.put(1, i, j);
+                    } else {
+                        result.put(0, i, j);
+                    }
+                }
+            }
+            for (i = 0; i < n; i++) {
+                t = clone.get(i, i);
+                for (j = 0; j < n; j++) {
+                    result.put(result.get(i, j) / t, i, j);
+                    clone.put(clone.get(i, j) / t, i, j);
+                }
+                for (j = 0; j < n; j++) {
+                    if (j != i) {
+                        t = clone.get(j, i);
+                        for (k = 0; k < n; k++) {
+                            result.put(result.get(j, k) - t * result.get(i, k), j, k);
+                            clone.put(clone.get(j, k) - t * clone.get(i, k), j, k);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -335,7 +390,7 @@ namespace Matrix {
      * @param col Col
      * @return Value at the position.
      */
-    double Matrix2::get(int row, int col) { return values_[row * width_ + col]; }
+    double Matrix2::get(int row, int col) const { return values_[row * width_ + col]; }
 
     /**
      * Updates the newValue at the position row, col newValue
@@ -359,5 +414,22 @@ namespace Matrix {
      * @return Height of the matrix
      */
     int Matrix2::getHeight() const { return height_; }
+
+    void printMatrix(Matrix2 &matrix) {
+        for (int i = 0; i < matrix.getHeight(); i++) {
+            for (int j = 0; j < matrix.getWidth(); j++) {
+                std::cout << matrix.get(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    Matrix2 inverse(Matrix2 const &matrix) {
+        return matrix.inverse();
+    }
+
+    Matrix2 transpose(Matrix2 const &matrix) {
+        return matrix.transpose();
+    }
 
 }  // namespace Matrix2

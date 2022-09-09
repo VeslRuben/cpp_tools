@@ -1,10 +1,8 @@
 //
 // Created by itzRu on 01.09.2021.
 //
-
-#ifndef MATRIX_H
-#define MATRIX_H
-
+#pragma once
+#include "list"
 
 namespace Matrix {
     class Matrix2 {
@@ -19,6 +17,8 @@ namespace Matrix {
 
         Matrix2(const Matrix2 &old_obj);  // copy constructor
 
+        Matrix2(Matrix2 &&old_obj) noexcept ;  // move constructor
+
         ~Matrix2();
 
         // #####################################
@@ -31,17 +31,17 @@ namespace Matrix {
         bool operator!=(const Matrix2 &mat) const;
 
         // Matrix2 Operators ####################
-        Matrix2 operator+(Matrix2 &mat);
+        Matrix2 operator+(Matrix2 const &mat) const;
 
-        Matrix2 operator+=(Matrix2 &mat);
+        Matrix2 operator+=(Matrix2 const &mat);
 
-        Matrix2 operator-(Matrix2 &mat);
+        Matrix2 operator-(Matrix2 const &mat) const;
 
-        Matrix2 operator-=(Matrix2 &mat);
+        Matrix2 operator-=(Matrix2 const &mat);
 
-        Matrix2 operator*(Matrix2 &mat);
+        Matrix2 operator*(Matrix2 const &mat) const;
 
-        Matrix2 operator*=(Matrix2 &mat);
+        Matrix2 operator*=(Matrix2 const &mat);
         // ######################################
 
         // Scaler Operators
@@ -60,15 +60,20 @@ namespace Matrix {
 
         double operator[](int i);
 
-        double operator()(int row, int col);
+        double operator()(int row, int col) const;
         // #####################################
         // #####################################
 
         void resize(int height, int width);
 
-        void transpose();
+        [[nodiscard]] Matrix2 transpose() const;
 
-        double get(int row, int col);
+        [[nodiscard]] Matrix2 T() const { return transpose(); }
+
+        [[nodiscard]] Matrix2 inverse() const;
+
+
+        [[nodiscard]] double get(int row, int col) const;
 
         void put(double newValue, int row, int col);
 
@@ -80,5 +85,12 @@ namespace Matrix {
         double *values_;
         int width_, height_;
     };
+
+
+    void printMatrix(Matrix2 &mat);
+
+    Matrix2 inverse(Matrix2 const &mat);
+
+    Matrix2 transpose(Matrix2 const &mat);
 }
-#endif //MATRIX_H
+
