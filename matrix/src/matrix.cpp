@@ -72,7 +72,7 @@ namespace Matrix {
      * Move constructor
      * @param old_obj
      */
-    Matrix2::Matrix2(Matrix2 &&old_obj)  noexcept {
+    Matrix2::Matrix2(Matrix2 &&old_obj) noexcept {
         height_ = old_obj.height_;
         width_ = old_obj.width_;
         values_ = old_obj.values_;
@@ -134,7 +134,8 @@ namespace Matrix {
 
         if (height_ == mat.height_ && width_ == mat.width_) {
             for (int i = 0; i < height_ * width_; ++i) {
-                if (std::round(values_[i] * 10000000000.) /10000000000. != std::round(mat.values_[i] * 10000000000.) /10000000000.)
+                if (std::round(values_[i] * 10000000000.) / 10000000000. !=
+                    std::round(mat.values_[i] * 10000000000.) / 10000000000.)
                     return false;
             }
         } else return false;
@@ -184,7 +185,7 @@ namespace Matrix {
      * @param mat Matrix2 to subtract form this.
      * @return Result of the subtraction as a new Matrix2.
      */
-    Matrix2 Matrix2::operator-(Matrix2 const&mat) const {
+    Matrix2 Matrix2::operator-(Matrix2 const &mat) const {
         Matrix2 result(this->getHeight(), this->getWidth());
         if (height_ == mat.height_ && width_ == mat.width_) {
             for (int r = 0; r < this->getHeight(); r++) {
@@ -361,76 +362,123 @@ namespace Matrix {
         return result;
     }
 
+    /**
+ * Returns the determinant of the matrix.
+ * @return determinant of the matrix.
+ */
+    double Matrix2::determinant() const {
+        if (height_ == width_) {
+            double det = 0;
+            if (height_ == 1) {
+                det = get(0, 0);
+            } else if (height_ == 2) {
+                det = get(0, 0) * get(1, 1) - get(0, 1) * get(1, 0);
+            } else {
+                int sign = 1;
+                for (int i = 0; i < width_; i++) {
+                    Matrix2 subMatrix = subMatrixWithoutRowAndCol(0, i);
+                    det += sign * get(0, i) * subMatrix.determinant();
+                    sign = -sign;
+                }
+            }
+            return det;
+        }
+        return 0;
+    }
+
 
     /**
      * Returns the inverse of the matrix as a copy.
+     * Returns zero matrix if the matrix is not invertible.
      * @return inverse of the matrix.
      */
     Matrix2 Matrix2::inverse() const {
-        Matrix2 clone = *this;
-        Matrix2 result = *this;
         if (height_ == width_) {
-            int n = height_;
-            int i, j, k;
-            double t;
-            for (i = 0; i < n; i++) {
-                for (j = 0; j < n; j++) {
-                    if (i == j) {
-                        result.put(1, i, j);
-                    } else {
-                        result.put(0, i, j);
-                    }
-                }
-            }
-            for (i = 0; i < n; i++) {
-                t = clone.get(i, i);
-                for (j = 0; j < n; j++) {
-                    result.put(result.get(i, j) / t, i, j);
-                    clone.put(clone.get(i, j) / t, i, j);
-                }
-                for (j = 0; j < n; j++) {
-                    if (j != i) {
-                        t = clone.get(j, i);
-                        for (k = 0; k < n; k++) {
-                            result.put(result.get(j, k) - t * result.get(i, k), j, k);
-                            clone.put(clone.get(j, k) - t * clone.get(i, k), j, k);
+            double det = determinant();
+            if (det != 0) {
+                Matrix2 result(height_, width_);
+                if (height_ == 1) {
+                    result.put(1 / get(0, 0), 0, 0);
+                } else if (height_ == 2) {
+                    result.put(get(1, 1) / det, 0, 0);
+                    result.put(-get(0, 1) / det, 0, 1);
+                    result.put(-get(1, 0) / det, 1, 0);
+                    result.put(get(0, 0) / det, 1, 1);
+                } else {
+                    int sign = 1;
+                    for (int i = 0; i < width_; i++) {
+                        for (int j = 0; j < height_; j++) {
+                            Matrix2 subMatrix = subMatrixWithoutRowAndCol(j, i);
+                            result.put(sign * subMatrix.determinant() / det, i, j);
+                            sign = -sign;
                         }
                     }
                 }
+                return result;
+            }
+        }
+        return zeros(height_, width_);
+    }
+
+
+    /**
+     * Returns the submatrix of this matrix without the row and col.
+     * @param row Row to remove
+     * @param col Col to remove
+     * @return Submatrix
+     */
+    Matrix2 Matrix2::subMatrixWithoutRowAndCol(int row, int col) const {
+        if (height_ == 2 && width_ == 2) {
+            return Matrix2(1, 1, new double[1]{get(1 - row, 1 - col)});
+        }
+        Matrix2 result(height_ - 1, width_ - 1);
+        int resultRow = 0;
+        int resultCol = 0;
+        for (int i = 0; i < height_; i++) {
+            if (i != row) {
+                for (int j = 0; j < width_; j++) {
+                    if (j != col) {
+                        result.put(get(i, j), resultRow, resultCol);
+                        resultCol++;
+                    }
+                }
+                resultCol = 0;
+                resultRow++;
             }
         }
         return result;
     }
 
-    /**
-     * Returns the value at position row, col.
-     * @param row Row
-     * @param col Col
-     * @return Value at the position.
-     */
+
+/**
+ * Returns the value at position row, col.
+ * @param row Row
+ * @param col Col
+ * @return Value at the position.
+ */
     double Matrix2::get(int row, int col) const { return values_[row * width_ + col]; }
 
-    /**
-     * Updates the newValue at the position row, col newValue
-     * @param newValue New value.
-     * @param row Row
-     * @param col Col
-     */
+/**
+ * Updates the newValue at the position row, col newValue
+ * @param newValue New value.
+ * @param row Row
+ * @param col Col
+ */
     void Matrix2::put(double newValue, int row, int col) {
         int index = row * width_ + col;
         values_[index] = newValue;
     }
 
-    /**
-     * Returns the width of the matrix.
-     * @return Width of the matrix
-     */
+/**
+ * Returns the width of the matrix.
+ * @return Width of the matrix
+ */
     int Matrix2::getWidth() const { return width_; }
 
-    /**
-     * Returns the height of the matrix.
-     * @return Height of the matrix
-     */
+/**
+ * Returns the height of the matrix.
+ * @return Height of the matrix
+ */
     int Matrix2::getHeight() const { return height_; }
 
     void printMatrix(Matrix2 &matrix) {
@@ -448,6 +496,14 @@ namespace Matrix {
 
     Matrix2 transpose(Matrix2 const &matrix) {
         return matrix.transpose();
+    }
+
+    Matrix2 zeros(int height, int width) {
+        double values[height * width];
+        for (int i = 0; i < height * width; i++) {
+            values[i] = 0;
+        }
+        return {height, width, values};
     }
 
 }  // namespace Matrix2

@@ -72,8 +72,11 @@ namespace Matrix {
 
         [[nodiscard]] Matrix2 T() const { return transpose(); }
 
+        [[nodiscard]] double determinant() const;
+
         [[nodiscard]] Matrix2 inverse() const;
 
+        [[nodiscard]] Matrix2 subMatrixWithoutRowAndCol(int row, int col) const;
 
         [[nodiscard]] double get(int row, int col) const;
 
@@ -94,5 +97,7 @@ namespace Matrix {
     Matrix2 inverse(Matrix2 const &mat);
 
     Matrix2 transpose(Matrix2 const &mat);
+
+    Matrix2 zeros(int height, int width);
 }
 
