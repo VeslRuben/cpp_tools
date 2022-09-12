@@ -190,12 +190,12 @@ namespace Matrix {
         // #####################################
         // #####################################
 
-        /**
-         * Not implemented properly. Do not use! FIXME
-         * @param height New height
-         * @param width New width
-         */
-        void resize(int height, int width);
+       /**
+        * Gives the matrix a new shape without changing the values. The new size must be the same as the old size.
+        * @param height New height of the matrix.
+        * @param width New width of the matrix.
+        */
+        void reshape(int height, int width);
 
         /**
          * Returns the transpose of the matrix as a copy.

@@ -244,14 +244,11 @@ namespace Matrix {
         return get(row, col);
     }
     // #####################################
-    // #####################################
-
-
-    void Matrix2::resize(int height, int width) {
-        height_ = height;
-        width_ = width;
-        delete[] values_;
-        values_ = new double[height_ * width_];
+    void Matrix2::reshape(int height, int width) {
+        if (height * width == height_ * width_) {
+            height_ = height;
+            width_ = width;
+        }
     }
 
 
