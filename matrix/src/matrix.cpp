@@ -4,15 +4,16 @@
 
 #include "matrix.h"
 #include "iostream"
+#include "cmath"
 
 namespace Matrix {
     /**
-     * Returns a matrix of size 1*1.
+     * Returns a matrix of size 0x0 whit no space allocated for values.
      */
     Matrix2::Matrix2() {
-        width_ = 1;
-        height_ = 1;
-        values_ = new double[1]{};
+        width_ = 0;
+        height_ = 0;
+        values_ = nullptr;
     }
 
     /**
@@ -76,6 +77,8 @@ namespace Matrix {
         width_ = old_obj.width_;
         values_ = old_obj.values_;
         old_obj.values_ = nullptr;
+        old_obj.height_ = 0;
+        old_obj.width_ = 0;
     }
 
     /**
@@ -107,8 +110,22 @@ namespace Matrix {
         return *this;
     }
 
+    Matrix2 &Matrix2::operator=(Matrix2 &&oldMatrix) noexcept {
+        if (this != &oldMatrix) {
+            height_ = oldMatrix.height_;
+            width_ = oldMatrix.width_;
+            delete[] values_;
+            values_ = oldMatrix.values_;
+            oldMatrix.values_ = nullptr;
+            oldMatrix.height_ = 0;
+            oldMatrix.width_ = 0;
+        }
+        return *this;
+    }
+
     /**
      * Returns true if the matrix's are the same or have the same size and values.
+     * Rounds the values to 10 decimal places before comparing them to avoid floating point errors.
      * @param mat Matrix2 to compere with.
      * @return true if matrix's is equal.
      */
@@ -117,7 +134,8 @@ namespace Matrix {
 
         if (height_ == mat.height_ && width_ == mat.width_) {
             for (int i = 0; i < height_ * width_; ++i) {
-                if (values_[i] != mat.values_[i]) return false;
+                if (std::round(values_[i] * 10000000000.) /10000000000. != std::round(mat.values_[i] * 10000000000.) /10000000000.)
+                    return false;
             }
         } else return false;
         return true;

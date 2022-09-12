@@ -26,6 +26,8 @@ namespace Matrix {
         // #####################################
         Matrix2 &operator=(const Matrix2 &oldMatrix);
 
+        Matrix2 &operator=(Matrix2 &&oldMatrix) noexcept;
+
         bool operator==(const Matrix2 &mat) const;
 
         bool operator!=(const Matrix2 &mat) const;
