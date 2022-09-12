@@ -139,9 +139,6 @@ int matrix_op_test() {
 
     Matrix::Matrix2 ans2inv(2, 2, {-4, 3, 7. / 2, -5. / 2});
     Matrix::Matrix2 mat2inv = mat2.inverse();
-    Matrix::printMatrix(mat5inv);
-    std::cout << std::endl;
-    Matrix::printMatrix(ans5inv);
 
     if (mat5inv != ans5inv) {
         return 1;

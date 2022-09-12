@@ -24,3 +24,8 @@ add_executable(get_set_test get_set_test.cpp)
 target_link_libraries(get_set_test matrix)
 target_include_directories(scaler_op_test PUBLIC ../include)
 add_test(NAME Get_set_test COMMAND get_set_test)
+
+add_executable(helper_func_test helper_func_test.cpp)
+target_link_libraries(helper_func_test matrix)
+target_include_directories(helper_func_test PUBLIC ../include)
+add_test(NAME Helper_func_test COMMAND helper_func_test)

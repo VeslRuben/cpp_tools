@@ -42,16 +42,22 @@ namespace Matrix {
         }
     }
 
+    Matrix2::Matrix2(int height, int width, double &&values) {
+        width_ = width;
+        height_ = height;
+        values_ = &values;
+    }
+
     /**
      * Returns a a matrix of size height*width, initialises the matrix with the past in values parameter.
      * @param height Height of the matrix.
      * @param width Width of the matrix.
      * @param values Values to initialise the matrix. must be of size height*width
      */
-    Matrix2::Matrix2(int height, int width, const std::list<double> &values) {
+    Matrix2::Matrix2(int height, int width, const std::vector<double> &values) {
         height_ = height;
         width_ = width;
-        values_ = new double[height * width];
+        values_ = new double[width_ * height_];
         std::copy(values.begin(), values.end(), values_);
     }
 
@@ -149,6 +155,19 @@ namespace Matrix {
      */
     bool Matrix2::operator!=(const Matrix2 &mat) const {
         return !this->operator==(mat);
+    }
+
+    std::ostream &operator<<(std::ostream &os, const Matrix2 &mat) {
+        os << "[";
+        for (int i = 0; i < mat.height_; i++) {
+            for (int j = 0; j < mat.width_; j++) {
+                os << mat.values_[i * mat.width_ + j];
+                if (j != mat.width_ - 1) os << ", ";
+            }
+            if (i != mat.height_ - 1) os << ";" << std::endl;
+        }
+        os << "]";
+        return os;
     }
 
     // Matrix2 Operators ####################
@@ -469,25 +488,103 @@ namespace Matrix {
         values_[index] = newValue;
     }
 
-/**
- * Returns the width of the matrix.
- * @return Width of the matrix
- */
-    int Matrix2::getWidth() const { return width_; }
+    bool Matrix2::isSymmetric() const {
+        if (!isSquare()) {
+            return false;
+        }
 
-/**
- * Returns the height of the matrix.
- * @return Height of the matrix
- */
-    int Matrix2::getHeight() const { return height_; }
+        for (int i = 0; i < height_; ++i) {
+            for (int j = 0; j < width_; ++j) {
+                if (get(i, j) != get(j, i)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool Matrix2::isDiagonal() const {
+        if (!isSquare()) {
+            return false;
+        }
+
+        for (int i = 0; i < height_; ++i) {
+            for (int j = 0; j < width_; ++j) {
+                if (i != j && get(i, j) != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool Matrix2::isIdentity() const {
+        if (!isSquare()) {
+            return false;
+        }
+
+        for (int i = 0; i < height_; ++i) {
+            for (int j = 0; j < width_; ++j) {
+                if (i == j && get(i, j) != 1) {
+                    return false;
+                } else if (i != j && get(i, j) != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool Matrix2::isUpperTriangular() const {
+        if (!isSquare()) {
+            return false;
+        }
+
+        for (int i = 0; i < height_; ++i) {
+            for (int j = 0; j < width_; ++j) {
+                if (i > j && get(i, j) != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool Matrix2::isLowerTriangular() const {
+        if (!isSquare()) {
+            return false;
+        }
+
+        for (int i = 0; i < height_; ++i) {
+            for (int j = 0; j < width_; ++j) {
+                if (i < j && get(i, j) != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool Matrix2::isZero() const {
+        for (int i = 0; i < height_; ++i) {
+            for (int j = 0; j < width_; ++j) {
+                if (get(i, j) != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
 
     void printMatrix(Matrix2 &matrix) {
-        for (int i = 0; i < matrix.getHeight(); i++) {
-            for (int j = 0; j < matrix.getWidth(); j++) {
-                std::cout << matrix.get(i, j) << " ";
-            }
-            std::cout << std::endl;
-        }
+       std::cout << matrix << std::endl;
     }
 
     Matrix2 inverse(Matrix2 const &matrix) {
@@ -502,6 +599,27 @@ namespace Matrix {
         double values[height * width];
         for (int i = 0; i < height * width; i++) {
             values[i] = 0;
+        }
+        return {height, width, values};
+    }
+
+    Matrix2 ones(int height, int width) {
+        double values[height * width];
+        for (int i = 0; i < height * width; i++) {
+            values[i] = 1;
+        }
+        return {height, width, values};
+    }
+
+    Matrix2 eye(int height, int width) {
+        double values[height * width];
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (i == j) {
+                    values[i * width + j] = 1;
+                } else
+                    values[i * width + j] = 0;
+            }
         }
         return {height, width, values};
     }
