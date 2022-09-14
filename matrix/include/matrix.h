@@ -3,7 +3,9 @@
 //
 #pragma once
 
+#ifndef ARDUINO_H
 #include "vector"
+#endif
 
 namespace Matrix {
     class Matrix2 {
@@ -28,6 +30,8 @@ namespace Matrix {
          */
         Matrix2(int height, int width, const double *values);
 
+#ifndef ARDUINO_H
+
         /**
          * Crates a a matrix of size height*width, initialises the matrix with the past in values parameter.
          * @param height Height of the matrix.
@@ -35,6 +39,16 @@ namespace Matrix {
          * @param values Values to initialise the matrix. must be of size height*width
          */
         Matrix2(int height, int width, const std::vector<double> &values);
+
+        /**
+         * Crates a a matrix of size height*width, initialises the matrix with the past in values parameter.
+         * @param height Height of the matrix.
+         * @param width Width of the matrix.
+         * @param values Values to initialise the matrix. must be of size height*width
+         */
+        Matrix2(int height, int width, const std::vector<std::vector<double>> &values);
+
+#endif
 
         /**
          * Copy constructor.
@@ -59,6 +73,13 @@ namespace Matrix {
          * @return Reference to this.
          */
         Matrix2 &operator=(const Matrix2 &oldMatrix);
+
+        /**
+         * Assignment operator for scalar. if this is not a scalar matrix, it will be converted to a scalar matrix
+         * @param value Scalar value
+         * @return Reference to this
+         */
+        Matrix2 &operator=(double value);
 
         /**
          * Move assignment operator.
@@ -135,7 +156,7 @@ namespace Matrix {
          * @param scaler Scaler to add.
          * @return New matrix with the result.
          */
-        Matrix2 operator+(double scalar);
+        Matrix2 operator+(double scalar) const;
 
         /**
          * Adds the scaler to the matrix.
@@ -149,7 +170,7 @@ namespace Matrix {
          * @param scaler Scaler to subtract.
          * @return New matrix with the result.
          */
-        Matrix2 operator-(double scalar);
+        Matrix2 operator-(double scalar) const;
 
         /**
          * Subtracts the scaler to the matrix.
@@ -163,7 +184,7 @@ namespace Matrix {
          * @param scaler Scaler to multiply.
          * @return New matrix with the result.
          */
-        Matrix2 operator*(double scalar);
+        Matrix2 operator*(double scalar) const;
 
         /**
          * Multiplies the scaler to the matrix.
@@ -171,6 +192,20 @@ namespace Matrix {
          * @return Reference to this.
          */
         Matrix2 operator*=(double scalar);
+
+        /**
+         * Divides the scaler to the matrix.
+         * @param scaler Scaler to divide.
+         * @return New matrix with the result.
+         */
+        Matrix2 operator/(double scalar) const;
+
+        /**
+         * Divides the scaler to the matrix.
+         * @param scaler Scaler to divide.
+         * @return Reference to this.
+         */
+        Matrix2 operator/=(double scalar);
         // ######################################
 
         /**
@@ -178,7 +213,14 @@ namespace Matrix {
          * @param i Index
          * @return Value at index
          */
-        double operator[](int i);
+        double operator[](int i) const;
+
+        /**
+         * Returns the addres of value at index i of the matrix. The indexing is in row major.
+         * @param i Index
+         * @return Reference to value at index
+         */
+        double &operator[](int i);
 
         /**
          * Returns the value at row and column of the matrix
@@ -187,15 +229,17 @@ namespace Matrix {
          * @return Value at row and column.
          */
         double operator()(int row, int col) const;
-        // #####################################
+
+        double &operator()(int row, int col);
         // #####################################
 
-       /**
-        * Gives the matrix a new shape without changing the values. The new size must be the same as the old size.
-        * @param height New height of the matrix.
-        * @param width New width of the matrix.
-        */
-        void reshape(int height, int width);
+        /**
+         * Gives the matrix a new shape without changing the values. The new size must be the same as the old size.
+         * @param height New height of the matrix.
+         * @param width New width of the matrix.
+         * @return Reference to this.
+         */
+        Matrix2 reshape(int height, int width);
 
         /**
          * Returns the transpose of the matrix as a copy.
@@ -264,6 +308,20 @@ namespace Matrix {
          */
         [[nodiscard]] int size() const { return width_ * height_; }
 
+        /**
+         * Returns the row vector at the given index.
+         * @param row Row index.
+         * @return Row vector.
+         */
+        [[nodiscard]] Matrix2 row(int row) const;
+
+        /**
+         * Returns the column vector at the given index.
+         * @param col Column index.
+         * @return Column vector.
+         */
+        [[nodiscard]] Matrix2 col(int col) const;
+
         [[nodiscard]] bool isSquare() const { return width_ == height_; }
 
         [[nodiscard]] bool isSymmetric() const;
@@ -292,7 +350,7 @@ namespace Matrix {
     };
 
 
-    void printMatrix(Matrix2 &mat);
+    void printMatrix(Matrix2 const &mat);
 
     Matrix2 inverse(Matrix2 const &mat);
 
@@ -303,5 +361,7 @@ namespace Matrix {
     Matrix2 ones(int height, int width);
 
     Matrix2 eye(int height, int width);
+
+    Matrix2 random(int height, int width);
 }
 

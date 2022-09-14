@@ -11,3 +11,7 @@ install(TARGETS matrix DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(FILES include/matrix.h DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 add_subdirectory(test)
+
+add_executable(maze src/maze_generator.cpp)
+target_link_libraries(maze matrix)
+target_include_directories(maze PUBLIC matrix)

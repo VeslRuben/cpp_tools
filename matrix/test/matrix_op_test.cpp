@@ -148,6 +148,18 @@ int matrix_op_test() {
         return 1;
     }
 
+    // ########################################
+    // Test reshape ###########################
+    // ########################################
+
+    Matrix::Matrix2 mat7(2, 2, {1, 2, 3, 4});
+    mat7.reshape(1, 4);
+    Matrix::Matrix2 ans7(1, 4, {1, 2, 3, 4});
+    if (mat7 != ans7) {
+        return 1;
+    }
+
+
     return 0;
 }
 

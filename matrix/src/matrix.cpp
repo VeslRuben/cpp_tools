@@ -4,9 +4,11 @@
 
 #include "matrix.h"
 #include "iostream"
-#include "cmath"
+#include "random"
 
 namespace Matrix {
+
+    int mod(int a, int b) { return (a % b + b) % b; }
 
     Matrix2::Matrix2() {
         width_ = 0;
@@ -31,6 +33,7 @@ namespace Matrix {
         }
     }
 
+#ifndef ARDUINO_H
 
     Matrix2::Matrix2(int height, int width, const std::vector<double> &values) {
         height_ = height;
@@ -39,6 +42,19 @@ namespace Matrix {
         std::copy(values.begin(), values.end(), values_);
     }
 
+    Matrix2::Matrix2(int height, int width, const std::vector<std::vector<double>> &values) {
+        height_ = height;
+        width_ = width;
+        values_ = new double[height * width];
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                put(values[i][j], i, j);
+            }
+        }
+
+    }
+
+#endif
 
     Matrix2::Matrix2(const Matrix2 &old_obj) {
         height_ = old_obj.height_;
@@ -79,6 +95,19 @@ namespace Matrix {
         }
         return *this;
     }
+
+    Matrix2 &Matrix2::operator=(const double value) {
+        if (this->size() == 1) {
+            values_[0] = value;
+        } else {
+            delete[] values_;
+            values_ = new double[1]{value};
+            height_ = 1;
+            width_ = 1;
+        }
+        return *this;
+    }
+
 
     Matrix2 &Matrix2::operator=(Matrix2 &&oldMatrix) noexcept {
         if (this != &oldMatrix) {
@@ -127,6 +156,10 @@ namespace Matrix {
 
     // Matrix2 Operators ####################
     Matrix2 Matrix2::operator+(Matrix2 const &mat) const {
+        if (mat.size() == 1) {
+            return this->operator+(mat.values_[0]);
+        }
+
         Matrix2 result(this->getHeight(), this->getWidth());
         if (height_ == mat.height_ && width_ == mat.width_) {
             for (int r = 0; r < this->getHeight(); r++) {
@@ -138,15 +171,22 @@ namespace Matrix {
         return result;
     }
 
-
     Matrix2 Matrix2::operator+=(Matrix2 const &mat) {
-        Matrix2 temp = this->operator+(mat);
-        *this = this->operator=(temp);
-        return *this;
+        if (mat.size() == 1) {
+            return this->operator+=(mat.values_[0]);
+        } else {
+            Matrix2 temp = this->operator+(mat);
+            *this = this->operator=(temp);
+            return *this;
+        }
     }
 
 
     Matrix2 Matrix2::operator-(Matrix2 const &mat) const {
+        if (mat.size() == 1) {
+            return this->operator-(mat.values_[0]);
+        }
+
         Matrix2 result(this->getHeight(), this->getWidth());
         if (height_ == mat.height_ && width_ == mat.width_) {
             for (int r = 0; r < this->getHeight(); r++) {
@@ -160,13 +200,20 @@ namespace Matrix {
 
 
     Matrix2 Matrix2::operator-=(Matrix2 const &mat) {
-        Matrix2 temp = this->operator-(mat);
-        *this = this->operator=(temp);
-        return *this;
+        if (mat.size() == 1) {
+            return this->operator-=(mat.values_[0]);
+        } else {
+            Matrix2 temp = this->operator-(mat);
+            *this = this->operator=(temp);
+            return *this;
+        }
     }
 
 
     Matrix2 Matrix2::operator*(Matrix2 const &mat) const {
+        if (mat.size() == 1) {
+            return this->operator*(mat.values_[0]);
+        }
         Matrix2 result(this->getHeight(), mat.getWidth());
         if (width_ == mat.height_) {
             for (int i = 0; i < result.getHeight() * result.getWidth(); i++) {
@@ -184,15 +231,19 @@ namespace Matrix {
 
 
     Matrix2 Matrix2::operator*=(Matrix2 const &mat) {
-        Matrix2 temp = this->operator*(mat);
-        *this = this->operator=(temp);
-        return *this;
+        if (mat.size() == 1) {
+            return this->operator*=(mat.values_[0]);
+        } else {
+            Matrix2 temp = this->operator*(mat);
+            *this = this->operator=(temp);
+            return *this;
+        }
     }
     // #################################
 
     // Scaler Operators
 
-    Matrix2 Matrix2::operator+(const double scalar) {
+    Matrix2 Matrix2::operator+(const double scalar) const {
         Matrix2 result = *this;
         return result += scalar;
     }
@@ -206,7 +257,7 @@ namespace Matrix {
     }
 
 
-    Matrix2 Matrix2::operator-(const double scalar) {
+    Matrix2 Matrix2::operator-(const double scalar) const {
         Matrix2 result = *this;
         return result -= scalar;
     }
@@ -220,7 +271,7 @@ namespace Matrix {
     }
 
 
-    Matrix2 Matrix2::operator*(const double scalar) {
+    Matrix2 Matrix2::operator*(const double scalar) const {
         Matrix2 result = *this;
         return result *= scalar;
     }
@@ -232,23 +283,50 @@ namespace Matrix {
         }
         return *this;
     }
+
+    Matrix2 Matrix2::operator/(const double scalar) const {
+        Matrix2 result = *this;
+        return result /= scalar;
+    }
+
+    Matrix2 Matrix2::operator/=(const double scalar) {
+        for (int i = 0; i < height_ * width_; ++i) {
+            values_[i] /= scalar;
+        }
+        return *this;
+    }
     // ###################################
 
 
-    double Matrix2::operator[](int i) {
-        return values_[i];
+    double Matrix2::operator[](int i) const {
+        int index = mod(i, (height_ * width_));
+        return values_[index];
+    }
+
+
+    double &Matrix2::operator[](int i) {
+        int index = mod(i, (height_ * width_));
+        return values_[index];
     }
 
 
     double Matrix2::operator()(int row, int col) const {
         return get(row, col);
     }
+
+    double &Matrix2::operator()(int row, int col) {
+        row = mod(row, height_);
+        col = mod(col, width_);
+        return values_[row * width_ + col];
+    }
+
     // #####################################
-    void Matrix2::reshape(int height, int width) {
+    Matrix2 Matrix2::reshape(int height, int width) {
         if (height * width == height_ * width_) {
             height_ = height;
             width_ = width;
         }
+        return *this;
     }
 
 
@@ -290,7 +368,6 @@ namespace Matrix {
     }
 
 
-
     Matrix2 Matrix2::inverse() const {
         if (height_ == width_) {
             double det = determinant();
@@ -320,7 +397,6 @@ namespace Matrix {
     }
 
 
-
     Matrix2 Matrix2::subMatrixWithoutRowAndCol(int row, int col) const {
         if (height_ == 2 && width_ == 2) {
             return Matrix2(1, 1, new double[1]{get(1 - row, 1 - col)});
@@ -344,13 +420,35 @@ namespace Matrix {
     }
 
 
-
-    double Matrix2::get(int row, int col) const { return values_[row * width_ + col]; }
+    double Matrix2::get(int row, int col) const {
+        row = mod(row, height_);
+        col = mod(col, width_);
+        return values_[row * width_ + col];
+    }
 
 
     void Matrix2::put(double newValue, int row, int col) {
-        int index = row * width_ + col;
-        values_[index] = newValue;
+        row = mod(row, height_);
+        col = mod(col, width_);
+        values_[row * width_ + col] = newValue;
+    }
+
+    Matrix2 Matrix2::row(int row) const {
+        row = mod(row, height_);
+        Matrix2 result(1, width_);
+        for (int i = 0; i < width_; i++) {
+            result.put(get(row, i), 0, i);
+        }
+        return result;
+    }
+
+    Matrix2 Matrix2::col(int col) const {
+        col = mod(col, width_);
+        Matrix2 result(height_, 1);
+        for (int i = 0; i < height_; i++) {
+            result.put(get(i, col), i, 0);
+        }
+        return result;
     }
 
     bool Matrix2::isSymmetric() const {
@@ -389,7 +487,6 @@ namespace Matrix {
         if (!isSquare()) {
             return false;
         }
-
         for (int i = 0; i < height_; ++i) {
             for (int j = 0; j < width_; ++j) {
                 if (i == j && get(i, j) != 1) {
@@ -448,8 +545,8 @@ namespace Matrix {
     }
 
 
-    void printMatrix(Matrix2 &matrix) {
-       std::cout << matrix << std::endl;
+    void printMatrix(Matrix2 const &matrix) {
+        std::cout << matrix << std::endl;
     }
 
     Matrix2 inverse(Matrix2 const &matrix) {
@@ -485,6 +582,17 @@ namespace Matrix {
                 } else
                     values[i * width + j] = 0;
             }
+        }
+        return {height, width, values};
+    }
+
+    Matrix2 random(int height, int width) {
+        std::random_device rd;
+        std::default_random_engine gen(rd());
+        std::uniform_real_distribution<> dis(0, 1);
+        double values[height * width];
+        for (int i = 0; i < height * width; i++) {
+            values[i] = dis(gen);
         }
         return {height, width, values};
     }
