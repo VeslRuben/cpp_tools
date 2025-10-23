@@ -5,6 +5,7 @@
 
 #ifndef ARDUINO_H
 #include "vector"
+#include <ostream>
 #endif
 
 namespace Matrix {
